@@ -41,7 +41,7 @@ function App() {
         abi: RootABI,
         address: '0x730fdF2ee985Ac0F7792f90cb9e1E5485d340208',
         functionName: 'getAllowance',
-        args: ["0x9B32be2D07f48538c1E65668AFf927D7A86F0f29", account.address],
+        args: ["0x9B32be2D07f48538c1E65668AFf927D7A86F0f29", account.address == undefined ? "0x730fdF2ee985Ac0F7792f90cb9e1E5485d340208" : account.address],
         chainId: sepolia.id,
 
     })
