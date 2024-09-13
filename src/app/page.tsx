@@ -13,7 +13,7 @@ import './page.css'
 import {getConfig} from "@/wagmi";
 
 function App() {
-    const {connectors, connect, status, connectError} = useConnect()
+    const {connectors, connect} = useConnect()
     const {disconnect} = useDisconnect()
     const {
         data: hash,
@@ -26,20 +26,25 @@ function App() {
 
     const {data: ensName } = useEnsName({
         address: account.address,
-        enabled: !!account.address,  // Ensure the query runs only if the address is defined
+        // enabled: !!account.address,  // Ensure the query runs only if the address is defined
         chainId: mainnet.id,
     });
 
+    let en = ensName;
+    if (en == undefined) {
+        en = "";
+    }
+
     const {data: avatar} = useEnsAvatar({
-        name: normalize(ensName),
-        enabled: !!account.address,  // Ensure the query runs only if the address is defined
+        name: normalize(en),
+        // enabled: !!account.address,  // Ensure the query runs only if the address is defined
         chainId: mainnet.id,
     })
 
-    const [file, setFile] = useState(null);
+    const [file, setFile] = useState<File>(new File([""], ""));
     const [cid, setCid] = useState("");
 
-    const handleFileChange = (event) => {
+    const handleFileChange = (event: any) => {
         const selectedFile = event.target.files[0];
         if (selectedFile) {
             setFile(selectedFile);
@@ -149,6 +154,7 @@ function App() {
 
     async function doUpload (callback: Function)  {
 
+
         const seed = await file.arrayBuffer()
         const source: IMerkletreeSource = {seed: seed, chunkSize: 10240, preserve: false}
         const tree = await Merkletree.grow(source)
@@ -207,7 +213,7 @@ function App() {
             // Append the sender and merkle fields
             formData.append('sender', senderS);
             formData.append('merkle', root);
-            formData.append('start', Number(startS));
+            formData.append('start', startS);
 
             const request = new Request(url, {
                 method: "POST",
@@ -290,7 +296,7 @@ function App() {
 
 
     function uploadFile() {
-        doUpload((root) => {
+        doUpload((root: any) => {
             console.log(root)
             getEthPrice().then(price => {
                 const p = getStoragePrice(price, file.size);
@@ -354,7 +360,6 @@ function App() {
                             {connector.name}
                         </button>
                     ))}
-                    <div>{connectError?.message}</div>
                 </div>)}
 
             <div>

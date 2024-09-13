@@ -25,6 +25,8 @@
     "@wagmi/cli": "latest",
     "bufferutil": "^4.0.8",
     "encoding": "^0.1.13",
+    "eslint": "8.57.0",
+    "eslint-config-next": "14.2.11",
     "lokijs": "^1.5.12",
     "pino-pretty": "^10.3.1",
     "supports-color": "^9.4.0",
