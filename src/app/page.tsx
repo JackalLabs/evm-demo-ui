@@ -154,6 +154,7 @@ function App() {
 
     async function doUpload (callback: Function)  {
 
+        setCid("")
 
         const seed = await file.arrayBuffer()
         const source: IMerkletreeSource = {seed: seed, chunkSize: 10240, preserve: false}
