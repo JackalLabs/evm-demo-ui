@@ -10,6 +10,8 @@ import { Providers } from './providers'
 
 const inter = Inter({ subsets: ['latin'] })
 
+export const dynamic = 'force-static'
+
 export const metadata: Metadata = {
   title: 'Jackal EVM Demo',
   description: 'Access Jackal Storage from the EVM',
