@@ -1,6 +1,15 @@
 'use client'
 
-import {useAccount, useConnect, useDisconnect, useWriteContract, BaseError, useEnsAddress, useReadContract} from 'wagmi'
+import {
+    useAccount,
+    useConnect,
+    useDisconnect,
+    useWriteContract,
+    BaseError,
+    useEnsAddress,
+    useReadContract,
+    useSwitchChain, useWaitForTransactionReceipt
+} from 'wagmi'
 import {useEffect, useState} from "react";
 import {IMerkletreeSource, Merkletree} from "@jackallabs/dogwood-tree";
 import { useEnsName } from 'wagmi'
@@ -8,19 +17,34 @@ import {mainnet, sepolia} from 'wagmi/chains'
 import { useEnsAvatar } from 'wagmi'
 import { normalize } from 'viem/ens'
 
+import {AppABI, RootABI} from './abis'
+
 import './page.css'
 
 function App() {
     const {connectors, connect} = useConnect()
     const {disconnect} = useDisconnect()
+    const { chains, switchChain } = useSwitchChain()
+
     const {
         data: hash,
         error,
         isPending,
         writeContract
     } = useWriteContract()
+
     const account = useAccount();
 
+
+
+    const {refetch: refetchProjects, data: allowanceRes, isFetched: queryComplete} = useReadContract({
+        abi: RootABI,
+        address: '0x730fdF2ee985Ac0F7792f90cb9e1E5485d340208',
+        functionName: 'getAllowance',
+        args: ["0x9B32be2D07f48538c1E65668AFf927D7A86F0f29", account.address],
+        chainId: sepolia.id,
+
+    })
 
     const {data: ensName } = useEnsName({
         address: account.address,
@@ -41,6 +65,7 @@ function App() {
 
     const [file, setFile] = useState<File>(new File([""], ""));
     const [cid, setCid] = useState("");
+    const [uploading, setUploading] = useState(false);
 
     const handleFileChange = (event: any) => {
         const selectedFile = event.target.files[0];
@@ -50,108 +75,11 @@ function App() {
     };
 
 
-    const abi = [
-        {
-            "type": "constructor",
-            "inputs": [
-                {
-                    "name": "_jackalAddress",
-                    "type": "address",
-                    "internalType": "address"
-                }
-            ],
-            "stateMutability": "nonpayable"
-        },
-        {
-            "type": "function",
-            "name": "cabinet",
-            "inputs": [
-                {
-                    "name": "",
-                    "type": "address",
-                    "internalType": "address"
-                },
-                {
-                    "name": "",
-                    "type": "uint256",
-                    "internalType": "uint256"
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "",
-                    "type": "string",
-                    "internalType": "string"
-                }
-            ],
-            "stateMutability": "view"
-        },
-        {
-            "type": "function",
-            "name": "fileAddress",
-            "inputs": [
-                {
-                    "name": "_addr",
-                    "type": "address",
-                    "internalType": "address"
-                },
-                {
-                    "name": "_index",
-                    "type": "uint256",
-                    "internalType": "uint256"
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "",
-                    "type": "string",
-                    "internalType": "string"
-                }
-            ],
-            "stateMutability": "view"
-        },
-        {
-            "type": "function",
-            "name": "fileCount",
-            "inputs": [
-                {
-                    "name": "_addr",
-                    "type": "address",
-                    "internalType": "address"
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "",
-                    "type": "uint256",
-                    "internalType": "uint256"
-                }
-            ],
-            "stateMutability": "view"
-        },
-        {
-            "type": "function",
-            "name": "upload",
-            "inputs": [
-                {
-                    "name": "merkle",
-                    "type": "string",
-                    "internalType": "string"
-                },
-                {
-                    "name": "filesize",
-                    "type": "uint64",
-                    "internalType": "uint64"
-                }
-            ],
-            "outputs": [],
-            "stateMutability": "payable"
-        }
-    ]
+
 
 
     async function doUpload (callback: Function)  {
-
+        setUploading(true)
         setCid("")
 
         const seed = await file.arrayBuffer()
@@ -294,24 +222,39 @@ function App() {
 
 
 
-    function uploadFile() {
-        doUpload((root: any) => {
-            console.log(root)
-            getEthPrice().then(price => {
-                const p = getStoragePrice(price, file.size);
-                const wei =  Math.floor(p * 1.05)
-                console.log("price: " + wei)
-                writeContract({
-                    address: '0xdE39AF082d4BCfaeF8676ecaccaFd4cFDc7B525D',
-                    abi,
-                    functionName: 'upload',
-                    args: [root, BigInt(file.size)],
-                    value: BigInt(wei),
-                    chainId: sepolia.id,
+    async function uploadFile() {
+        if (account.chainId != sepolia.id) {
+            switchChain({ chainId: sepolia.id })
+        } else if (!allowanceRes) {
+            console.log("must make allowance")
+            console.log(RootABI)
+            await writeContract({
+                abi: RootABI,
+                address: '0x730fdF2ee985Ac0F7792f90cb9e1E5485d340208',
+                functionName: 'addAllowance',
+                args: ["0x9B32be2D07f48538c1E65668AFf927D7A86F0f29"],
+                chainId: sepolia.id,
+            })
+        } else {
+            doUpload((root: any) => {
+                getEthPrice().then(price => {
+                    const p = getStoragePrice(price, file.size);
+                    const wei = Math.floor(p * 1.05)
+                    console.log("price: " + wei)
+                    writeContract({
+                        abi: AppABI,
+                        address: '0x9B32be2D07f48538c1E65668AFf927D7A86F0f29',
+                        functionName: 'upload',
+                        args: [root, BigInt(file.size)],
+                        value: BigInt(wei),
+                        chainId: sepolia.id,
+                    })
                 });
-            });
 
-        })
+            })
+        }
+
+
 
     }
 
@@ -368,17 +311,18 @@ function App() {
                     <input type="file" onChange={handleFileChange}/>
                 </form>
                 <button id={"uploadButton"} onClick={uploadFile}
-                        disabled={account.status != 'connected' || !file}>Upload
+                        disabled={account.status != 'connected' || !file}>{account.chainId != sepolia.id ? "Switch Chains" : (allowanceRes ? "Upload" : "Make Allowance")}
                 </button>
                 {hash && <div>Transaction Hash: {hash}</div>}
                 {isPending && <div>TX Pending...</div>}
                 {cid.length > 0 &&
                     <div id={"ipfs"}>IPFS CID: <a target={"_blank"} href={"https://ipfs.io/ipfs/" + cid}>{cid}</a>
                     </div>}
-                {hash && cid.length == 0 && <div>File uploading...</div>}
+                {uploading && cid.length == 0 && allowanceRes && <div>File uploading...</div>}
                 {error && (
                     <div>Error: {(error as BaseError).shortMessage || error.message}</div>
                 )}
+
             </div>
 
         </>
