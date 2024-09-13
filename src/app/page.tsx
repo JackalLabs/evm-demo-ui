@@ -7,10 +7,8 @@ import { useEnsName } from 'wagmi'
 import {mainnet, sepolia} from 'wagmi/chains'
 import { useEnsAvatar } from 'wagmi'
 import { normalize } from 'viem/ens'
-import { readContract } from '@wagmi/core'
 
 import './page.css'
-import {getConfig} from "@/wagmi";
 
 function App() {
     const {connectors, connect} = useConnect()
@@ -309,6 +307,7 @@ function App() {
                     functionName: 'upload',
                     args: [root, BigInt(file.size)],
                     value: BigInt(wei),
+                    chainId: sepolia.id,
                 });
             });
 
