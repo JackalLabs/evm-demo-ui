@@ -13,13 +13,18 @@ import {
 import {useEffect, useState} from "react";
 import {IMerkletreeSource, Merkletree} from "@jackallabs/dogwood-tree";
 import { useEnsName } from 'wagmi'
-import {mainnet, sepolia} from 'wagmi/chains'
+import {mainnet, sepolia, baseSepolia, base} from 'wagmi/chains'
 import { useEnsAvatar } from 'wagmi'
 import { normalize } from 'viem/ens'
 
+const testnet = baseSepolia
+const curMainnet = base
 import {AppABI, RootABI} from './abis'
 
 import './page.css'
+
+const StorageDrawer = "0x1b4d4D083DeEa0002368E8B3A2BED37DcFB39A1f"
+const BridgeContract = "0x20738B8eaB736f24c7881bA48263ee60Eb2a0A2a"
 
 function App() {
     const {connectors, connect} = useConnect()
@@ -39,17 +44,17 @@ function App() {
 
     const {refetch: refetchProjects, data: allowanceRes, isFetched: queryComplete} = useReadContract({
         abi: RootABI,
-        address: '0x730fdF2ee985Ac0F7792f90cb9e1E5485d340208',
+        address: BridgeContract,
         functionName: 'getAllowance',
-        args: ["0x9B32be2D07f48538c1E65668AFf927D7A86F0f29", account.address == undefined ? "0x730fdF2ee985Ac0F7792f90cb9e1E5485d340208" : account.address],
-        chainId: sepolia.id,
+        args: [StorageDrawer, account.address == undefined ? BridgeContract : account.address],
+        chainId: testnet.id,
 
     })
 
     const {data: ensName } = useEnsName({
         address: account.address,
         // enabled: !!account.address,  // Ensure the query runs only if the address is defined
-        chainId: mainnet.id,
+        chainId: curMainnet.id,
     });
 
     let en = ensName;
@@ -60,7 +65,7 @@ function App() {
     const {data: avatar} = useEnsAvatar({
         name: normalize(en),
         // enabled: !!account.address,  // Ensure the query runs only if the address is defined
-        chainId: mainnet.id,
+        chainId: curMainnet.id,
     })
 
     const [file, setFile] = useState<File>(new File([""], ""));
@@ -223,18 +228,20 @@ function App() {
 
 
     async function uploadFile() {
-        if (account.chainId != sepolia.id) {
-            switchChain({ chainId: sepolia.id })
+        console.log(account.chainId, testnet.id)
+        if (account.chainId != testnet.id) {
+            switchChain({ chainId: testnet.id })
         } else if (!allowanceRes) {
             console.log("must make allowance")
             console.log(RootABI)
             await writeContract({
                 abi: RootABI,
-                address: '0x730fdF2ee985Ac0F7792f90cb9e1E5485d340208',
+                address: BridgeContract,
                 functionName: 'addAllowance',
-                args: ["0x9B32be2D07f48538c1E65668AFf927D7A86F0f29"],
-                chainId: sepolia.id,
+                args: [StorageDrawer],
+                chainId: testnet.id,
             })
+
         } else {
             doUpload((root: any) => {
                 getEthPrice().then(price => {
@@ -243,11 +250,11 @@ function App() {
                     console.log("price: " + wei)
                     writeContract({
                         abi: AppABI,
-                        address: '0x9B32be2D07f48538c1E65668AFf927D7A86F0f29',
+                        address: StorageDrawer,
                         functionName: 'upload',
                         args: [root, BigInt(file.size)],
                         value: BigInt(wei),
-                        chainId: sepolia.id,
+                        chainId: testnet.id,
                     })
                 });
 
@@ -311,7 +318,7 @@ function App() {
                     <input type="file" onChange={handleFileChange}/>
                 </form>
                 <button id={"uploadButton"} onClick={uploadFile}
-                        disabled={account.status != 'connected' || !file}>{account.chainId != sepolia.id ? "Switch Chains" : (allowanceRes ? "Upload" : "Make Allowance")}
+                        disabled={account.status != 'connected' || !file}>{account.chainId != testnet.id ? "Switch Chains" : (allowanceRes ? "Upload" : "Make Allowance")}
                 </button>
                 {hash && <div>Transaction Hash: {hash}</div>}
                 {isPending && <div>TX Pending...</div>}
