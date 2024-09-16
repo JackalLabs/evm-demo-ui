@@ -13,18 +13,58 @@ import {
 import {useEffect, useState} from "react";
 import {IMerkletreeSource, Merkletree} from "@jackallabs/dogwood-tree";
 import { useEnsName } from 'wagmi'
-import {mainnet, sepolia} from 'wagmi/chains'
+import {mainnet, sepolia, baseSepolia, base, Chain, optimismSepolia} from 'wagmi/chains'
 import { useEnsAvatar } from 'wagmi'
 import { normalize } from 'viem/ens'
 
 import {AppABI, RootABI} from './abis'
 
 import './page.css'
+import {Address} from "viem";
+
+type Network = {
+    drawer: Address,
+    bridge: Address,
+    testnet:Chain,
+    mainnet:Chain,
+    name: string,
+    priceFeed: string,
+}
+
+
+const contracts: Record<string, Network> = {
+    base: {
+        drawer: "0x1b4d4D083DeEa0002368E8B3A2BED37DcFB39A1f",
+        bridge: "0x20738B8eaB736f24c7881bA48263ee60Eb2a0A2a",
+        testnet: baseSepolia,
+        mainnet: base,
+        name: "Base",
+        priceFeed: "ethereum",
+    },
+    eth: {
+        drawer: "0x9B32be2D07f48538c1E65668AFf927D7A86F0f29",
+        bridge: "0x730fdF2ee985Ac0F7792f90cb9e1E5485d340208",
+        testnet: sepolia,
+        mainnet: mainnet,
+        name: "Ethereum",
+        priceFeed: "ethereum",
+    },
+    op: {
+        drawer: "0x3a5ab5d5df8A8AF40BbcE53DF5999E92b9017483",
+        bridge: "0x5eb3B1f07b33da11D91290B57952b4b6f312e8dd",
+        testnet: optimismSepolia,
+        mainnet: mainnet,
+        name: "OP",
+        priceFeed: "ethereum",
+    }
+};
+
 
 function App() {
     const {connectors, connect} = useConnect()
     const {disconnect} = useDisconnect()
     const { chains, switchChain } = useSwitchChain()
+    const [network, setNetwork] = useState(contracts.eth);
 
     const {
         data: hash,
@@ -35,21 +75,19 @@ function App() {
 
     const account = useAccount();
 
-
-
     const {refetch: refetchProjects, data: allowanceRes, isFetched: queryComplete} = useReadContract({
         abi: RootABI,
-        address: '0x730fdF2ee985Ac0F7792f90cb9e1E5485d340208',
+        address: network.bridge,
         functionName: 'getAllowance',
-        args: ["0x9B32be2D07f48538c1E65668AFf927D7A86F0f29", account.address == undefined ? "0x730fdF2ee985Ac0F7792f90cb9e1E5485d340208" : account.address],
-        chainId: sepolia.id,
-
+        args: [network.drawer, account.address == undefined ? network.drawer : account.address],
+        // @ts-nocheck
+        chainId: network.testnet.id,
     })
 
     const {data: ensName } = useEnsName({
         address: account.address,
         // enabled: !!account.address,  // Ensure the query runs only if the address is defined
-        chainId: mainnet.id,
+        chainId: network.mainnet.id,
     });
 
     let en = ensName;
@@ -60,7 +98,7 @@ function App() {
     const {data: avatar} = useEnsAvatar({
         name: normalize(en),
         // enabled: !!account.address,  // Ensure the query runs only if the address is defined
-        chainId: mainnet.id,
+        chainId: network.mainnet.id,
     })
 
     const [file, setFile] = useState<File>(new File([""], ""));
@@ -185,9 +223,9 @@ function App() {
 
     const getEthPrice = async (): Promise<number> => {
         try {
-            const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd');
+            const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${network.priceFeed}&vs_currencies=usd`);
             const data = await response.json();
-            return data.ethereum.usd;
+            return data[network.priceFeed].usd;
         } catch (error) {
             console.error('Error fetching ETH price:', error);
             throw error;
@@ -223,18 +261,20 @@ function App() {
 
 
     async function uploadFile() {
-        if (account.chainId != sepolia.id) {
-            switchChain({ chainId: sepolia.id })
+        console.log(account.chainId, network.testnet.id)
+        if (account.chainId != network.testnet.id) {
+            switchChain({ chainId: network.testnet.id })
         } else if (!allowanceRes) {
             console.log("must make allowance")
             console.log(RootABI)
             await writeContract({
                 abi: RootABI,
-                address: '0x730fdF2ee985Ac0F7792f90cb9e1E5485d340208',
+                address: network.bridge,
                 functionName: 'addAllowance',
-                args: ["0x9B32be2D07f48538c1E65668AFf927D7A86F0f29"],
-                chainId: sepolia.id,
+                args: [network.drawer],
+                chainId:network.testnet.id,
             })
+
         } else {
             doUpload((root: any) => {
                 getEthPrice().then(price => {
@@ -243,11 +283,11 @@ function App() {
                     console.log("price: " + wei)
                     writeContract({
                         abi: AppABI,
-                        address: '0x9B32be2D07f48538c1E65668AFf927D7A86F0f29',
+                        address: network.drawer,
                         functionName: 'upload',
                         args: [root, BigInt(file.size)],
                         value: BigInt(wei),
-                        chainId: sepolia.id,
+                        chainId: network.testnet.id,
                     })
                 });
 
@@ -258,11 +298,23 @@ function App() {
 
     }
 
+    const handleSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setNetwork(contracts[e.target.value]);
+    };
+
     return (
         <>
             <h1>
                 Jackal EVM Demo
             </h1>
+            <div>
+                <select onChange={handleSelect}>
+                    <option value="eth">Ethereum</option>
+                    <option value="base">Base</option>
+                    <option value="op">OP</option>
+                </select>
+                <div>Selected Network: {network.name}</div>
+            </div>
             <div id={"account"}>
 
                 <div>
@@ -311,7 +363,7 @@ function App() {
                     <input type="file" onChange={handleFileChange}/>
                 </form>
                 <button id={"uploadButton"} onClick={uploadFile}
-                        disabled={account.status != 'connected' || !file}>{account.chainId != sepolia.id ? "Switch Chains" : (allowanceRes ? "Upload" : "Make Allowance")}
+                        disabled={account.status != 'connected' || !file}>{account.chainId != network.testnet.id ? "Switch Chains" : (allowanceRes ? "Upload" : "Make Allowance")}
                 </button>
                 {hash && <div>Transaction Hash: {hash}</div>}
                 {isPending && <div>TX Pending...</div>}
