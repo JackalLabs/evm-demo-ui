@@ -150,7 +150,7 @@ function App() {
             socket.send(subscriptionMessage);
             setTimeout(() => {
                 socket.close()
-            }, 60000)
+            }, 240000)
 
 
         });
