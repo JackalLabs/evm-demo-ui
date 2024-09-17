@@ -16,11 +16,13 @@ import { useEnsName } from 'wagmi'
 import {mainnet, sepolia, baseSepolia, base, Chain, optimismSepolia} from 'wagmi/chains'
 import { useEnsAvatar } from 'wagmi'
 import { normalize } from 'viem/ens'
+import 'react-toastify/dist/ReactToastify.css';
 
 import {AppABI, RootABI} from './abis'
 
 import './page.css'
 import {Address} from "viem";
+import {toast, ToastContainer} from "react-toastify";
 
 type Network = {
     drawer: Address,
@@ -75,6 +77,8 @@ function App() {
 
     const account = useAccount();
 
+    const [toastId, setToastId] = useState<number | string>(null);
+
     const {refetch: refetchProjects, data: allowanceRes, isFetched: queryComplete} = useReadContract({
         abi: RootABI,
         address: network.bridge,
@@ -117,6 +121,7 @@ function App() {
 
 
     async function doUpload (callback: Function)  {
+
         setUploading(true)
         setCid("")
 
@@ -156,6 +161,7 @@ function App() {
         });
 
         socket.addEventListener("message", async (event) => {
+
             const data = JSON.parse(event.data)
             console.log(data)
             console.log(data.result)
@@ -163,6 +169,10 @@ function App() {
                 callback(root)
                 return
             }
+
+            toast.dismiss(toastId)
+            setToastId(null)
+            toast("TX is finalized!", {type: "success"})
 
             const startS = data.result.events["post_file.start"][0]
             const senderS = data.result.events["post_file.signer"][0]
@@ -188,7 +198,11 @@ function App() {
 
             try {
                 // Send the POST request using fetch
-                const response = await fetch(request);
+                const response = await toast.promise(fetch(request),
+                    {      pending: 'Uploading file',
+                    success: 'File uploaded!',
+                    error: 'Upload failed'
+            });
 
                 // Handle the response
                 if (!response.ok) {
@@ -277,11 +291,11 @@ function App() {
 
         } else {
             doUpload((root: any) => {
-                getEthPrice().then(price => {
+                getEthPrice().then(async price => {
                     const p = getStoragePrice(price, file.size);
                     const wei = Math.floor(p * 1.05)
                     console.log("price: " + wei)
-                    writeContract({
+                    await writeContract({
                         abi: AppABI,
                         address: network.drawer,
                         functionName: 'upload',
@@ -289,6 +303,8 @@ function App() {
                         value: BigInt(wei),
                         chainId: network.testnet.id,
                     })
+                    const tId = toast("Waiting for TX finality.", {autoClose: false, isLoading: true})
+                    setToastId(tId)
                 });
 
             })
@@ -304,6 +320,7 @@ function App() {
 
     return (
         <>
+            <ToastContainer />
             <h1>
                 Jackal EVM Demo
             </h1>
