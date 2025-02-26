@@ -36,8 +36,8 @@ type Network = {
 
 const contracts: Record<string, Network> = {
     base: {
-        drawer: "0x1b4d4D083DeEa0002368E8B3A2BED37DcFB39A1f",
-        bridge: "0x20738B8eaB736f24c7881bA48263ee60Eb2a0A2a",
+        drawer: "0x82a8d3781241Ab5E5ffF8AB3292765C0f9d0431F",
+        bridge: "0x5d26f092717A538B446A301C2121D6C68157467C",
         testnet: baseSepolia,
         mainnet: base,
         name: "Base",
