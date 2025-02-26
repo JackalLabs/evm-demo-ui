@@ -10,25 +10,25 @@ import {
     useReadContract,
     useSwitchChain, useWaitForTransactionReceipt
 } from 'wagmi'
-import {useEffect, useState} from "react";
-import {IMerkletreeSource, Merkletree} from "@jackallabs/dogwood-tree";
+import { useEffect, useState } from "react";
+import { IMerkletreeSource, Merkletree } from "@jackallabs/dogwood-tree";
 import { useEnsName } from 'wagmi'
-import {mainnet, sepolia, baseSepolia, base, Chain, optimismSepolia} from 'wagmi/chains'
+import { mainnet, sepolia, baseSepolia, base, Chain, optimismSepolia } from 'wagmi/chains'
 import { useEnsAvatar } from 'wagmi'
 import { normalize } from 'viem/ens'
 import 'react-toastify/dist/ReactToastify.css';
 
-import {AppABI, RootABI} from './abis'
+import { AppABI, RootABI } from './abis'
 
 import './page.css'
-import {Address} from "viem";
-import {toast, ToastContainer} from "react-toastify";
+import { Address } from "viem";
+import { toast, ToastContainer } from "react-toastify";
 
 type Network = {
     drawer: Address,
     bridge: Address,
-    testnet:Chain,
-    mainnet:Chain,
+    testnet: Chain,
+    mainnet: Chain,
     name: string,
     priceFeed: string,
 }
@@ -63,8 +63,8 @@ const contracts: Record<string, Network> = {
 
 
 function App() {
-    const {connectors, connect} = useConnect()
-    const {disconnect} = useDisconnect()
+    const { connectors, connect } = useConnect()
+    const { disconnect } = useDisconnect()
     const { chains, switchChain } = useSwitchChain()
     const [network, setNetwork] = useState(contracts.eth);
 
@@ -77,9 +77,9 @@ function App() {
 
     const account = useAccount();
 
-    const [toastId, setToastId] = useState<number | string>(null);
+    const [toastId, setToastId] = useState<number | string>(0);
 
-    const {refetch: refetchProjects, data: allowanceRes, isFetched: queryComplete} = useReadContract({
+    const { refetch: refetchProjects, data: allowanceRes, isFetched: queryComplete } = useReadContract({
         abi: RootABI,
         address: network.bridge,
         functionName: 'getAllowance',
@@ -88,7 +88,7 @@ function App() {
         chainId: network.testnet.id,
     })
 
-    const {data: ensName } = useEnsName({
+    const { data: ensName } = useEnsName({
         address: account.address,
         // enabled: !!account.address,  // Ensure the query runs only if the address is defined
         chainId: network.mainnet.id,
@@ -99,7 +99,7 @@ function App() {
         en = "";
     }
 
-    const {data: avatar} = useEnsAvatar({
+    const { data: avatar } = useEnsAvatar({
         name: normalize(en),
         // enabled: !!account.address,  // Ensure the query runs only if the address is defined
         chainId: network.mainnet.id,
@@ -120,13 +120,13 @@ function App() {
 
 
 
-    async function doUpload (callback: Function)  {
+    async function doUpload(callback: Function) {
 
         setUploading(true)
         setCid("")
 
         const seed = await file.arrayBuffer()
-        const source: IMerkletreeSource = {seed: seed, chunkSize: 10240, preserve: false}
+        const source: IMerkletreeSource = { seed: seed, chunkSize: 10240, preserve: false }
         const tree = await Merkletree.grow(source)
         const root = tree.getRootAsHex()
 
@@ -171,8 +171,8 @@ function App() {
             }
 
             toast.dismiss(toastId)
-            setToastId(null)
-            toast("TX is finalized!", {type: "success"})
+            setToastId(0)
+            toast("TX is finalized!", { type: "success" })
 
             const startS = data.result.events["post_file.start"][0]
             const senderS = data.result.events["post_file.signer"][0]
@@ -199,10 +199,11 @@ function App() {
             try {
                 // Send the POST request using fetch
                 const response = await toast.promise(fetch(request),
-                    {      pending: 'Uploading file',
-                    success: 'File uploaded!',
-                    error: 'Upload failed'
-            });
+                    {
+                        pending: 'Uploading file',
+                        success: 'File uploaded!',
+                        error: 'Upload failed'
+                    });
 
                 // Handle the response
                 if (!response.ok) {
@@ -227,7 +228,7 @@ function App() {
 
     }
 
-    function shorten(s:string) {
+    function shorten(s: string) {
         if (s.length < 20) {
             return s;
         }
@@ -286,7 +287,7 @@ function App() {
                 address: network.bridge,
                 functionName: 'addAllowance',
                 args: [network.drawer],
-                chainId:network.testnet.id,
+                chainId: network.testnet.id,
             })
 
         } else {
@@ -303,7 +304,16 @@ function App() {
                         value: BigInt(wei),
                         chainId: network.testnet.id,
                     })
-                    const tId = toast("Waiting for TX finality.", {autoClose: false, isLoading: true})
+                    /*
+                    await writeContract({
+                        abi: RootABI,
+                        address: network.bridge,
+                        functionName: 'buyStorage',
+                        args: ["jkl12g4qwenvpzqeakavx5adqkw203s629tf6k8vdg", BigInt(30), BigInt("1073741824"), "referral code"],
+                        value: BigInt(wei),
+                        chainId: network.testnet.id,
+                    })*/
+                    const tId = toast("Waiting for TX finality.", { autoClose: false, isLoading: true })
                     setToastId(tId)
                 });
 
@@ -341,7 +351,7 @@ function App() {
                             <div className={"flex"}>
                                 <div id={"ens-container"}>
                                     {avatar && <img src={avatar} alt="ENS Avatar"
-                                                    style={{width: 50, height: 50, borderRadius: '50%'}}/>}
+                                        style={{ width: 50, height: 50, borderRadius: '50%' }} />}
                                     <div id={"names"}>
                                         <span>{ensName ? ensName : account.address}</span>
                                         {ensName && <span id={"address"}>{shorten(account.address)}</span>}
@@ -366,7 +376,7 @@ function App() {
                     {connectors.map((connector) => (
                         <button
                             key={connector.uid}
-                            onClick={() => connect({connector})}
+                            onClick={() => connect({ connector })}
                             type="button"
                         >
                             {connector.name}
@@ -377,10 +387,10 @@ function App() {
             <div>
                 <h2>Upload</h2>
                 <form>
-                    <input type="file" onChange={handleFileChange}/>
+                    <input type="file" onChange={handleFileChange} />
                 </form>
                 <button id={"uploadButton"} onClick={uploadFile}
-                        disabled={account.status != 'connected' || !file}>{account.chainId != network.testnet.id ? "Switch Chains" : (allowanceRes ? "Upload" : "Make Allowance")}
+                    disabled={account.status != 'connected' || !file}>{account.chainId != network.testnet.id ? "Switch Chains" : (allowanceRes ? "Upload" : "Make Allowance")}
                 </button>
                 {hash && <div>Transaction Hash: {hash}</div>}
                 {isPending && <div>TX Pending...</div>}
