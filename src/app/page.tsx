@@ -347,7 +347,7 @@ function App() {
                     <option value="base">Base</option>
                     <option value="op">OP</option>
                 </select>
-                <div>Selected Network: {network.name}</div>
+                <div>Selected Network: {network.name} {account.chainId != network.testnet.id ? "Mainnet" : "Testnet"}</div>
             </div>
             <div id={"account"}>
 
