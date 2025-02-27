@@ -11,6 +11,7 @@ import {
     useSwitchChain, useWaitForTransactionReceipt
 } from 'wagmi'
 import { useEffect, useState } from "react";
+import Image from 'next/image'
 import { IMerkletreeSource, Merkletree } from "@jackallabs/dogwood-tree";
 import { useEnsName } from 'wagmi'
 import { mainnet, sepolia, baseSepolia, base, Chain, optimismSepolia } from 'wagmi/chains'
@@ -84,13 +85,14 @@ function App() {
         address: network.bridge,
         functionName: 'getAllowance',
         args: [network.drawer, account.address == undefined ? network.drawer : account.address],
-        // @ts-nocheck
+        // @ts-ignore
         chainId: network.testnet.id,
     })
 
     const { data: ensName } = useEnsName({
         address: account.address,
         // enabled: !!account.address,  // Ensure the query runs only if the address is defined
+        // @ts-ignore
         chainId: network.mainnet.id,
     });
 
@@ -102,6 +104,7 @@ function App() {
     const { data: avatar } = useEnsAvatar({
         name: normalize(en),
         // enabled: !!account.address,  // Ensure the query runs only if the address is defined
+        // @ts-ignore
         chainId: network.mainnet.id,
     })
 
@@ -278,6 +281,7 @@ function App() {
     async function uploadFile() {
         console.log(account.chainId, network.testnet.id)
         if (account.chainId != network.testnet.id) {
+            // @ts-ignore
             switchChain({ chainId: network.testnet.id })
         } else if (!allowanceRes) {
             console.log("must make allowance")
@@ -287,6 +291,7 @@ function App() {
                 address: network.bridge,
                 functionName: 'addAllowance',
                 args: [network.drawer],
+                // @ts-ignore
                 chainId: network.testnet.id,
             })
 
@@ -302,17 +307,19 @@ function App() {
                         functionName: 'upload',
                         args: [root, BigInt(file.size)],
                         value: BigInt(wei),
+                        // @ts-ignore
                         chainId: network.testnet.id,
                     })
                     /*
-                    await writeContract({
-                        abi: RootABI,
-                        address: network.bridge,
-                        functionName: 'buyStorage',
-                        args: ["jkl12g4qwenvpzqeakavx5adqkw203s629tf6k8vdg", BigInt(30), BigInt("1073741824"), "referral code"],
-                        value: BigInt(wei),
-                        chainId: network.testnet.id,
-                    })*/
+                        await writeContract({
+                            abi: RootABI,
+                            address: network.bridge,
+                            functionName: 'buyStorage',
+                            args: ["jkl12g4qwenvpzqeakavx5adqkw203s629tf6k8vdg", BigInt(30), BigInt("1073741824"), "referral code"],
+                            value: BigInt(wei),
+                            chainId: network.testnet.id,
+                        })
+                    */
                     const tId = toast("Waiting for TX finality.", { autoClose: false, isLoading: true })
                     setToastId(tId)
                 });
@@ -350,7 +357,7 @@ function App() {
                             <h2>Account</h2>
                             <div className={"flex"}>
                                 <div id={"ens-container"}>
-                                    {avatar && <img src={avatar} alt="ENS Avatar"
+                                    {avatar && <Image src={avatar} alt="ENS Avatar"
                                         style={{ width: 50, height: 50, borderRadius: '50%' }} />}
                                     <div id={"names"}>
                                         <span>{ensName ? ensName : account.address}</span>
