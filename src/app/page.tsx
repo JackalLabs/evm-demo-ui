@@ -173,7 +173,7 @@ function App() {
                 return
             }
 
-            toast.dismiss(toastId)
+            toast.done(toastId)
             setToastId(0)
             toast("TX is finalized!", { type: "success" })
 
