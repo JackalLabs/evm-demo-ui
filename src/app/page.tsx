@@ -50,8 +50,8 @@ const contracts: Record<string, Network> = {
         priceFeed: "ethereum",
     },
     eth: {
-        drawer: "0x9B32be2D07f48538c1E65668AFf927D7A86F0f29",
-        bridge: "0x730fdF2ee985Ac0F7792f90cb9e1E5485d340208",
+        drawer: "0xB51DC38E8d6EDB08D20B145631F94Ac9d91455d0",
+        bridge: "0x093BB75ba20F4fe05c31a63ac42B93252C31aE02",
         testnet: sepolia,
         mainnet: mainnet,
         name: "Ethereum",
@@ -304,15 +304,24 @@ function App() {
                         chainId: network.testnet.id,
                     });
                     /*
-                                await writeContract({
-                                    abi: RootABI,
-                                    address: network.bridge,
-                                    functionName: 'buyStorage',
-                                    args: ["jkl12g4qwenvpzqeakavx5adqkw203s629tf6k8vdg", BigInt(30), BigInt("1073741824"), "referral code"],
-                                    value: BigInt(wei),
-                                    chainId: network.testnet.id,
-                                })
-                              */
+                        await writeContract({
+                            abi: RootABI,
+                            address: network.bridge,
+                            functionName: 'buyStorage',
+                            args: ["jkl1hgw33c888j7d4az50dn3pykljyl89kaau3s96g", BigInt(30), BigInt("1073741824"), "referral code"],
+                            value: BigInt(wei),
+                            // @ts-ignore
+                            chainId: network.testnet.id,
+                        });
+                        await writeContract({
+                            abi: RootABI,
+                            address: network.bridge,
+                            functionName: 'postKey',
+                            args: ["test key"],
+                            // @ts-ignore
+                            chainId: network.testnet.id,
+                        });
+                    */
                     const tId = toast("Waiting for TX finality.", {
                         autoClose: false,
                         isLoading: true,
