@@ -20,6 +20,8 @@ import {
     base,
     Chain,
     optimismSepolia,
+    polygonAmoy,
+    polygon,
 } from "wagmi/chains";
 import { useEnsAvatar } from "wagmi";
 import { normalize } from "viem/ens";
@@ -65,6 +67,14 @@ const contracts: Record<string, Network> = {
         name: "OP",
         priceFeed: "ethereum",
     },
+    pol: {
+        drawer: "0x7dAB0A27c5aB9D1Fb3D2f91E9f0eee9BD051a448",
+        bridge: "0x5d26f092717A538B446A301C2121D6C68157467C",
+        testnet: polygonAmoy,
+        mainnet: polygon,
+        name: "Polygon",
+        priceFeed: "ethereum",
+    },
 };
 
 function App() {
@@ -78,7 +88,6 @@ function App() {
     const account = useAccount();
 
     const [toastId, setToastId] = useState<number | string>(0);
-
     const {
         refetch: refetchProjects,
         data: allowanceRes,
@@ -345,6 +354,7 @@ function App() {
                     <option value="eth">Ethereum</option>
                     <option value="base">Base</option>
                     <option value="op">OP</option>
+                    <option value="pol">Polygon</option>
                 </select>
                 <div>
                     Selected Network: {network.name}{" "}
