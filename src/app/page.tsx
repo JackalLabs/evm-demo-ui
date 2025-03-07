@@ -77,6 +77,8 @@ const contracts: Record<string, Network> = {
         priceFeed: "ethereum",
     },
 };
+// patch rpc url, wagmi uses outdated rpc2.sepolia.org
+contracts.eth.testnet.rpcUrls.default.http = ["https://sepolia.drpc.org"]
 
 function App() {
     const { connectors, connect } = useConnect();
