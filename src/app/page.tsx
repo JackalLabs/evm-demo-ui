@@ -22,6 +22,7 @@ import {
     optimismSepolia,
     polygonAmoy,
     polygon,
+    optimism,
 } from "wagmi/chains";
 import { useEnsAvatar } from "wagmi";
 import { normalize } from "viem/ens";
@@ -63,7 +64,7 @@ const contracts: Record<string, Network> = {
         drawer: "0x5d26f092717A538B446A301C2121D6C68157467C",
         bridge: "0xA3FF0a3e8edCd1c1BefBa6e48e847DB9feF82CA2",
         testnet: optimismSepolia,
-        mainnet: mainnet,
+        mainnet: optimism,
         name: "OP",
         priceFeed: "ethereum",
     },
