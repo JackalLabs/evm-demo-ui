@@ -431,7 +431,7 @@ function App() {
                 {cid.length > 0 && (
                     <div id={"ipfs"}>
                         IPFS CID:{" "}
-                        <a target={"_blank"} href={"https://ipfs.io/ipfs/" + cid}>
+                        <a target={"_blank"} href={"https://ipfs.jackallabs.io/ipfs/" + cid}>
                             {cid}
                         </a>
                     </div>
