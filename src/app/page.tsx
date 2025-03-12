@@ -23,6 +23,8 @@ import {
     polygonAmoy,
     polygon,
     optimism,
+    arbitrumSepolia,
+    arbitrum,
 } from "wagmi/chains";
 import { useEnsAvatar } from "wagmi";
 import { normalize } from "viem/ens";
@@ -76,6 +78,14 @@ const contracts: Record<string, Network> = {
         name: "Polygon",
         priceFeed: "ethereum",
     },
+    arb: {
+        drawer: "0x5d26f092717A538B446A301C2121D6C68157467C",
+        bridge: "0xA3FF0a3e8edCd1c1BefBa6e48e847DB9feF82CA2",
+        testnet: arbitrumSepolia,
+        mainnet: arbitrum,
+        name: "Arbitrum",
+        priceFeed: "ethereum",
+    }
 };
 // patch rpc url, wagmi uses outdated rpc2.sepolia.org
 contracts.eth.testnet.rpcUrls.default.http = ["https://sepolia.drpc.org"]
@@ -300,6 +310,7 @@ function App() {
                 // @ts-ignore
                 chainId: network.testnet.id,
             });
+            toast("Allowance created!", { type: "success" });
         } else {
             doUpload((root: any) => {
                 getEthPrice().then(async (price) => {
@@ -358,6 +369,7 @@ function App() {
                     <option value="base">Base</option>
                     <option value="op">OP</option>
                     <option value="pol">Polygon</option>
+                    <option value="arb">Arbitrum</option>
                 </select>
                 <div>
                     Selected Network: {network.name}{" "}
