@@ -1,10 +1,10 @@
 import { http, cookieStorage, createConfig, createStorage } from 'wagmi'
-import {arbitrum, arbitrumSepolia, base, baseSepolia, mainnet, optimism, optimismSepolia, polygon, polygonAmoy, sepolia} from 'wagmi/chains'
+import {mainnet, sepolia, base, baseSepolia, optimism, optimismSepolia, polygon, polygonAmoy, arbitrum, arbitrumSepolia, soneium, soneiumMinato} from 'wagmi/chains'
 import { coinbaseWallet, injected, walletConnect } from 'wagmi/connectors'
 
 export function getConfig() {
   return createConfig({
-    chains: [mainnet, sepolia, base, baseSepolia, optimismSepolia, optimism, polygonAmoy, polygon, arbitrum, arbitrumSepolia],
+    chains: [mainnet, sepolia, base, baseSepolia, optimism, optimismSepolia, polygon, polygonAmoy, arbitrum, arbitrumSepolia, soneium, soneiumMinato],
     connectors: [
       injected(),
       coinbaseWallet(),
@@ -25,6 +25,8 @@ export function getConfig() {
       [polygon.id]: http(),
       [arbitrum.id]: http(),
       [arbitrumSepolia.id]: http(),
+      [soneium.id]: http(),
+      [soneiumMinato.id]: http(),
     },
   })
 }
