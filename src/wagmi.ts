@@ -1,10 +1,36 @@
-import { http, cookieStorage, createConfig, createStorage } from 'wagmi'
-import {mainnet, sepolia, base, baseSepolia, optimism, optimismSepolia, polygon, polygonAmoy, arbitrum, arbitrumSepolia, soneium, soneiumMinato} from 'wagmi/chains'
-import { coinbaseWallet, injected, walletConnect } from 'wagmi/connectors'
+import { http, cookieStorage, createConfig, createStorage } from "wagmi";
+import {
+  mainnet,
+  sepolia,
+  base,
+  baseSepolia,
+  optimism,
+  optimismSepolia,
+  polygon,
+  polygonAmoy,
+  arbitrum,
+  arbitrumSepolia,
+  soneium,
+  soneiumMinato,
+} from "wagmi/chains";
+import { coinbaseWallet, injected } from "wagmi/connectors";
 
 export function getConfig() {
   return createConfig({
-    chains: [mainnet, sepolia, base, baseSepolia, optimism, optimismSepolia, polygon, polygonAmoy, arbitrum, arbitrumSepolia, soneium, soneiumMinato],
+    chains: [
+      mainnet,
+      sepolia,
+      base,
+      baseSepolia,
+      optimism,
+      optimismSepolia,
+      polygon,
+      polygonAmoy,
+      arbitrum,
+      arbitrumSepolia,
+      soneium,
+      soneiumMinato,
+    ],
     connectors: [
       injected(),
       coinbaseWallet(),
@@ -28,11 +54,11 @@ export function getConfig() {
       [soneium.id]: http(),
       [soneiumMinato.id]: http(),
     },
-  })
+  });
 }
 
-declare module 'wagmi' {
+declare module "wagmi" {
   interface Register {
-    config: ReturnType<typeof getConfig>
+    config: ReturnType<typeof getConfig>;
   }
 }
