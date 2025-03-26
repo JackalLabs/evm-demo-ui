@@ -40,6 +40,8 @@ import { toast, ToastContainer } from "react-toastify";
 type Network = {
   drawer: Address;
   bridge: Address;
+  drawerMainnet: Address;
+  bridgeMainnet: Address;
   testnet: Chain;
   mainnet: Chain;
   name: string;
@@ -48,48 +50,60 @@ type Network = {
 
 const contracts: Record<string, Network> = {
   base: {
-    drawer: "0x82a8d3781241Ab5E5ffF8AB3292765C0f9d0431F",
-    bridge: "0x5d26f092717A538B446A301C2121D6C68157467C",
+    drawer: "0x83f69195100eea97BA9Fd0a4e15a1657Efd9D631",
+    bridge: "0x6f348699508B317862348f8d6F41795900E8d14A",
+    drawerMainnet: "0x0000000000000000000000000000000000000000",
+    bridgeMainnet: "0x0000000000000000000000000000000000000000",
     testnet: baseSepolia,
     mainnet: base,
     name: "Base",
     priceFeed: "ethereum",
   },
   eth: {
-    drawer: "0xB51DC38E8d6EDB08D20B145631F94Ac9d91455d0",
-    bridge: "0x093BB75ba20F4fe05c31a63ac42B93252C31aE02",
+    drawer: "0xadCAD6Cc46364a6FF0Cb6d5023Af15388C6D17C1",
+    bridge: "0x1A829964Dd155D89eBA94CfB6CAcbEC496C1df32",
+    drawerMainnet: "0x0000000000000000000000000000000000000000",
+    bridgeMainnet: "0x0000000000000000000000000000000000000000",
     testnet: sepolia,
     mainnet: mainnet,
     name: "Ethereum",
     priceFeed: "ethereum",
   },
   op: {
-    drawer: "0x5d26f092717A538B446A301C2121D6C68157467C",
-    bridge: "0xA3FF0a3e8edCd1c1BefBa6e48e847DB9feF82CA2",
+    drawer: "0x7dAB0A27c5aB9D1Fb3D2f91E9f0eee9BD051a448",
+    bridge: "0x82a8d3781241Ab5E5ffF8AB3292765C0f9d0431F",
+    drawerMainnet: "0x0000000000000000000000000000000000000000",
+    bridgeMainnet: "0x0000000000000000000000000000000000000000",
     testnet: optimismSepolia,
     mainnet: optimism,
     name: "OP",
     priceFeed: "ethereum",
   },
   pol: {
-    drawer: "0x7dAB0A27c5aB9D1Fb3D2f91E9f0eee9BD051a448",
-    bridge: "0x5d26f092717A538B446A301C2121D6C68157467C",
+    drawer: "0x093BB75ba20F4fe05c31a63ac42B93252C31aE02",
+    bridge: "0xc4A028437c4A9e0435771239c31C15fB20eD0274",
+    drawerMainnet: "0x0000000000000000000000000000000000000000",
+    bridgeMainnet: "0x0000000000000000000000000000000000000000",
     testnet: polygonAmoy,
     mainnet: polygon,
     name: "Polygon",
     priceFeed: "ethereum",
   },
   arb: {
-    drawer: "0x5d26f092717A538B446A301C2121D6C68157467C",
-    bridge: "0xA3FF0a3e8edCd1c1BefBa6e48e847DB9feF82CA2",
+    drawer: "0x7dAB0A27c5aB9D1Fb3D2f91E9f0eee9BD051a448",
+    bridge: "0x82a8d3781241Ab5E5ffF8AB3292765C0f9d0431F",
+    drawerMainnet: "0x0000000000000000000000000000000000000000",
+    bridgeMainnet: "0x0000000000000000000000000000000000000000",
     testnet: arbitrumSepolia,
     mainnet: arbitrum,
     name: "Arbitrum",
     priceFeed: "ethereum",
   },
   son: {
-    drawer: "0x5d26f092717A538B446A301C2121D6C68157467C",
-    bridge: "0xA3FF0a3e8edCd1c1BefBa6e48e847DB9feF82CA2",
+    drawer: "0x7dAB0A27c5aB9D1Fb3D2f91E9f0eee9BD051a448",
+    bridge: "0x82a8d3781241Ab5E5ffF8AB3292765C0f9d0431F",
+    drawerMainnet: "0x0000000000000000000000000000000000000000",
+    bridgeMainnet: "0x0000000000000000000000000000000000000000",
     testnet: soneiumMinato,
     mainnet: soneium,
     name: "Soneium",
@@ -114,11 +128,13 @@ function App() {
     isFetched: queryComplete,
   } = useReadContract({
     abi: RootABI,
-    address: network.bridge,
+    address: account.chainId != network.testnet.id ? network.bridgeMainnet : network.bridge,
     functionName: "getAllowance",
     args: [
-      network.drawer,
-      account.address == undefined ? network.drawer : account.address,
+      // select proper drawer
+      account.chainId != network.testnet.id ? network.drawerMainnet : network.drawer,
+      // if account is undefined, account address is drawer
+      account.address == undefined ? (account.chainId != network.testnet.id ? network.drawerMainnet : network.drawer) : account.address,
     ],
     // @ts-ignore
     chainId: network.testnet.id,
@@ -311,9 +327,9 @@ function App() {
       console.log(RootABI);
       await writeContract({
         abi: RootABI,
-        address: network.bridge,
+        address: account.chainId != network.testnet.id ? network.bridgeMainnet : network.bridge,
         functionName: "addAllowance",
-        args: [network.drawer],
+        args: [account.chainId != network.testnet.id ? network.drawerMainnet : network.drawer],
         // @ts-ignore
         chainId: network.testnet.id,
       });
@@ -326,7 +342,7 @@ function App() {
           console.log("price: " + wei);
           await writeContract({
             abi: AppABI,
-            address: network.drawer,
+            address: account.chainId != network.testnet.id ? network.drawerMainnet : network.drawer,
             functionName: "upload",
             args: [root, BigInt(file.size)],
             value: BigInt(wei),
