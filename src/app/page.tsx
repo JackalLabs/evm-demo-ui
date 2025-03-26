@@ -128,23 +128,38 @@ function App() {
     isFetched: queryComplete,
   } = useReadContract({
     abi: RootABI,
-    address: account.chainId != network.testnet.id ? network.bridgeMainnet : network.bridge,
+    address:
+      account.chainId != network.testnet.id
+        ? network.bridgeMainnet
+        : network.bridge,
     functionName: "getAllowance",
     args: [
       // select proper drawer
-      account.chainId != network.testnet.id ? network.drawerMainnet : network.drawer,
+      account.chainId != network.testnet.id
+        ? network.drawerMainnet
+        : network.drawer,
       // if account is undefined, account address is drawer
-      account.address == undefined ? (account.chainId != network.testnet.id ? network.drawerMainnet : network.drawer) : account.address,
+      account.address == undefined
+        ? account.chainId != network.testnet.id
+          ? network.drawerMainnet
+          : network.drawer
+        : account.address,
     ],
     // @ts-ignore
-    chainId: network.testnet.id,
+    chainId:
+      account.chainId != network.testnet.id
+        ? network.mainnet.id
+        : network.testnet.id,
   });
 
   const { data: ensName } = useEnsName({
     address: account.address,
     // enabled: !!account.address,  // Ensure the query runs only if the address is defined
     // @ts-ignore
-    chainId: network.mainnet.id,
+    chainId:
+      account.chainId != network.testnet.id
+        ? network.mainnet.id
+        : network.testnet.id,
   });
 
   let en = ensName;
@@ -156,7 +171,10 @@ function App() {
     name: normalize(en),
     // enabled: !!account.address,  // Ensure the query runs only if the address is defined
     // @ts-ignore
-    chainId: network.mainnet.id,
+    chainId:
+      account.chainId != network.testnet.id
+        ? network.mainnet.id
+        : network.testnet.id,
   });
 
   const [file, setFile] = useState<File>(new File([""], ""));
@@ -185,8 +203,10 @@ function App() {
 
     console.log(`Root: ${root}`);
 
-    // Replace with your Tendermint WebSocket endpoint
-    const wsUrl = "wss://testnet-rpc.jackalprotocol.com/websocket";
+    const wsUrl =
+      account.chainId != network.testnet.id
+        ? "wss://rpc.jackalprotocol.com/websocket"
+        : "wss://testnet-rpc.jackalprotocol.com/websocket";
 
     // Create a new WebSocket connection
     const socket = new WebSocket(wsUrl);
@@ -227,7 +247,10 @@ function App() {
       const startS = data.result.events["post_file.start"][0];
       const senderS = data.result.events["post_file.signer"][0];
 
-      const url = "https://testnet-provider.jackallabs.io/upload";
+      const url =
+        account.chainId != network.testnet.id
+          ? "https://mprov01.jackallabs.io"
+          : "https://testnet-provider.jackallabs.io/upload";
 
       // Create a FormData object
       const formData = new FormData();
@@ -318,20 +341,27 @@ function App() {
   }
 
   async function uploadFile() {
-    console.log(account.chainId, network.testnet.id);
-    if (account.chainId != network.testnet.id) {
-      // @ts-ignore
-      switchChain({ chainId: network.testnet.id });
-    } else if (!allowanceRes) {
+    console.log(account.chainId, network.mainnet.id, network.testnet.id);
+    if (!allowanceRes) {
       console.log("must make allowance");
       console.log(RootABI);
       await writeContract({
         abi: RootABI,
-        address: account.chainId != network.testnet.id ? network.bridgeMainnet : network.bridge,
+        address:
+          account.chainId != network.testnet.id
+            ? network.bridgeMainnet
+            : network.bridge,
         functionName: "addAllowance",
-        args: [account.chainId != network.testnet.id ? network.drawerMainnet : network.drawer],
+        args: [
+          account.chainId != network.testnet.id
+            ? network.drawerMainnet
+            : network.drawer,
+        ],
         // @ts-ignore
-        chainId: network.testnet.id,
+        chainId:
+          account.chainId != network.testnet.id
+            ? network.mainnet.id
+            : network.testnet.id,
       });
       toast("Allowance created!", { type: "success" });
     } else {
@@ -342,32 +372,30 @@ function App() {
           console.log("price: " + wei);
           await writeContract({
             abi: AppABI,
-            address: account.chainId != network.testnet.id ? network.drawerMainnet : network.drawer,
+            address:
+              account.chainId != network.testnet.id
+                ? network.drawerMainnet
+                : network.drawer,
             functionName: "upload",
             args: [root, BigInt(file.size)],
             value: BigInt(wei),
             // @ts-ignore
-            chainId: network.testnet.id,
+            chainId:
+              account.chainId != network.testnet.id
+                ? network.mainnet.id
+                : network.testnet.id,
           });
           /*
-                        await writeContract({
-                            abi: RootABI,
-                            address: network.bridge,
-                            functionName: 'buyStorage',
-                            args: ["jkl1hgw33c888j7d4az50dn3pykljyl89kaau3s96g", BigInt(30), BigInt("1073741824"), "referral code"],
-                            value: BigInt(wei),
-                            // @ts-ignore
-                            chainId: network.testnet.id,
-                        });
-                        await writeContract({
-                            abi: RootABI,
-                            address: network.bridge,
-                            functionName: 'postKey',
-                            args: ["test key"],
-                            // @ts-ignore
-                            chainId: network.testnet.id,
-                        });
-                    */
+            await writeContract({
+                abi: RootABI,
+                address: network.bridge,
+                functionName: 'buyStorage',
+                args: ["jkl1hgw33c888j7d4az50dn3pykljyl89kaau3s96g", BigInt(30), BigInt("1073741824"), "referral code"],
+                value: BigInt(wei),
+                // @ts-ignore
+                chainId: network.testnet.id,
+            });
+          */
           const tId = toast("Waiting for TX finality.", {
             autoClose: false,
             isLoading: true,
@@ -455,15 +483,26 @@ function App() {
           <input type="file" onChange={handleFileChange} />
         </form>
         <button
+          id={"switchButton"}
+          onClick={() =>
+            switchChain({
+              // @ts-ignore
+              chainId:
+                account.chainId == network.testnet.id
+                  ? network.mainnet.id
+                  : network.testnet.id,
+            })
+          } // switches to mainnet or testnet depending
+          disabled={account.status != "connected" || !file}
+        >
+          Switch Chains
+        </button>
+        <button
           id={"uploadButton"}
           onClick={uploadFile}
           disabled={account.status != "connected" || !file}
         >
-          {account.chainId != network.testnet.id
-            ? "Switch Chains"
-            : allowanceRes
-              ? "Upload"
-              : "Make Allowance"}
+          {allowanceRes ? "Upload" : "Make Allowance"}
         </button>
         {hash && <div>Transaction Hash: {hash}</div>}
         {isPending && <div>TX Pending...</div>}
