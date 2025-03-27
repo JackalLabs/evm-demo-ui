@@ -52,8 +52,8 @@ const contracts: Record<string, Network> = {
   base: {
     drawer: "0x83f69195100eea97BA9Fd0a4e15a1657Efd9D631",
     bridge: "0x6f348699508B317862348f8d6F41795900E8d14A",
-    drawerMainnet: "0x0000000000000000000000000000000000000000",
-    bridgeMainnet: "0x0000000000000000000000000000000000000000",
+    drawerMainnet: "0x9C3aA7b7F9116a03e7CAEe52512149FBa43730AF",
+    bridgeMainnet: "0x60766928613B818053E9922fC655aB9B7126a02E",
     testnet: baseSepolia,
     mainnet: base,
     name: "Base",
