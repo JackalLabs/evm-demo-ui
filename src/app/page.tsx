@@ -114,7 +114,7 @@ const contracts: Record<string, Network> = {
 function App() {
   const { connectors, connect } = useConnect();
   const { disconnect } = useDisconnect();
-  const { chains, switchChain } = useSwitchChain();
+  const { switchChain } = useSwitchChain();
   const [network, setNetwork] = useState(contracts.eth);
 
   const { data: hash, error, isPending, writeContract } = useWriteContract();
@@ -416,12 +416,12 @@ function App() {
       <h1>Jackal EVM Demo</h1>
       <div>
         <select onChange={handleSelect}>
-          <option value="eth">Ethereum</option>
+          <option value="eth">Ethereum (Testnet Only)</option>
           <option value="base">Base</option>
-          <option value="op">OP</option>
-          <option value="pol">Polygon</option>
-          <option value="arb">Arbitrum</option>
-          <option value="son">Soneium</option>
+          <option value="op">Optimism (Testnet Only)</option>
+          <option value="pol">Polygon (Testnet Only)</option>
+          <option value="arb">Arbitrum (Testnet Only)</option>
+          <option value="son">Soneium (Testnet Only)</option>
         </select>
         <div>
           Selected Network: {network.name}{" "}
