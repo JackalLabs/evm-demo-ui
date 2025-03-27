@@ -13,7 +13,7 @@ import {
   soneium,
   soneiumMinato,
 } from "wagmi/chains";
-import { coinbaseWallet, injected } from "wagmi/connectors";
+import { coinbaseWallet, injected, walletConnect } from "wagmi/connectors";
 
 export function getConfig() {
   return createConfig({

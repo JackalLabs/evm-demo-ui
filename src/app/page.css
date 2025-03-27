@@ -24,18 +24,21 @@ button:hover {
     border-width: 1px;
 }
 
-.connectors > button {
+.connectors>button {
     width: 80%;
     margin-left: auto;
     margin-right: auto;
     margin-bottom: 10px;
 
     background-color: #f8f8f8;
+    color: #000000;
 }
 
-#uploadButton {
+#uploadButton,
+#switchButton {
     margin-top: 8px;
-    margin-bottom: 8px;
+    margin-left: 0px;
+    margin-right: 8px;
 }
 
 #ipfs {
@@ -75,7 +78,7 @@ body {
     flex-direction: row;
 }
 
-.flex > button {
+.flex>button {
     height: min-content;
     align-self: center;
     display: inline-flex;
@@ -87,7 +90,7 @@ body {
     gap: 10px;
 }
 
-#ens-container > span {
+#ens-container>span {
     height: min-content;
     align-self: center;
     display: inline-flex;
@@ -99,7 +102,7 @@ body {
     gap: 20px;
 }
 
-#oldfiles > li {
+#oldfiles>li {
     flex-direction: row;
     align-items: end;
     display: inline-flex;
