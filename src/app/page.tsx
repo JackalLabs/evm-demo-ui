@@ -249,7 +249,7 @@ function App() {
 
       const url =
         account.chainId != network.testnet.id
-          ? "https://mprov01.jackallabs.io"
+          ? "https://mprov01.jackallabs.io/upload"
           : "https://testnet-provider.jackallabs.io/upload";
 
       // Create a FormData object
