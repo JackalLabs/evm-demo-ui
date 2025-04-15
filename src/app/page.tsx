@@ -298,10 +298,17 @@ function App() {
             error: "Upload failed",
           });
 
+
+
           const data = await response.json();
-          const cid = data["cid"];
-          setCid(cid);
-          complete = true
+          const progress = data["progress"];
+          if (progress == 100) {
+            complete = true
+            const cid = data["cid"];
+            setCid(cid);
+          } else {
+            await new Promise(r => setTimeout(r, 250));
+          }
         }
       } catch (error) {
         console.error("Upload failed:", error);
