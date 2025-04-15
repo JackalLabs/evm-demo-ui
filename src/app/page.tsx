@@ -249,8 +249,8 @@ function App() {
 
       const url =
         account.chainId != network.testnet.id
-          ? "https://mprov01.jackallabs.io/upload"
-          : "https://testnet-provider.jackallabs.io/upload";
+          ? "https://mprov01.jackallabs.io/v2/upload"
+          : "https://testnet-provider.jackallabs.io/v2/upload";
 
       // Create a FormData object
       const formData = new FormData();
@@ -283,8 +283,26 @@ function App() {
 
         const data = await response.json();
 
-        const cid = data["cid"];
-        setCid(cid);
+        const job = data["job_id"]
+
+        const joburl =
+            account.chainId != network.testnet.id
+                ? `https://mprov01.jackallabs.io/v2/status/${job}`
+                : "https://testnet-provider.jackallabs.io/v2/status/${job}";
+
+        let complete = false
+        while (!complete) {
+          const response = await toast.promise(fetch(joburl), {
+            pending: "Checking status",
+            success: "File uploaded!",
+            error: "Upload failed",
+          });
+
+          const data = await response.json();
+          const cid = data["cid"];
+          setCid(cid);
+          complete = true
+        }
       } catch (error) {
         console.error("Upload failed:", error);
       }
