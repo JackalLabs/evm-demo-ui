@@ -288,7 +288,7 @@ function App() {
         const joburl =
             account.chainId != network.testnet.id
                 ? `https://mprov01.jackallabs.io/v2/status/${job}`
-                : "https://testnet-provider.jackallabs.io/v2/status/${job}";
+                : `https://testnet-provider.jackallabs.io/v2/status/${job}`;
 
         let complete = false
         while (!complete) {
